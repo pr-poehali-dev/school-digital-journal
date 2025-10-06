@@ -35,11 +35,7 @@ const Index = () => {
   
   const [grades, setGrades] = useState<Grade[]>([]);
 
-  const [homeworks, setHomeworks] = useState<Homework[]>([
-    { id: '1', subject: 'Математика', task: 'Решить задачи №45-50', deadline: 'Завтра', urgent: true, completed: false },
-    { id: '2', subject: 'Физика', task: 'Лабораторная работа №3', deadline: '18 окт', urgent: false, completed: false },
-    { id: '3', subject: 'Литература', task: 'Прочитать главы 5-7', deadline: '20 окт', urgent: false, completed: false },
-  ]);
+  const [homeworks, setHomeworks] = useState<Homework[]>([]);
 
   const [newGrade, setNewGrade] = useState({ subject: '', grade: 5, teacher: '' });
   const [newHomework, setNewHomework] = useState({ subject: '', task: '', deadline: '', urgent: false });
@@ -49,7 +45,7 @@ const Index = () => {
   const stats = [
     { 
       title: 'Средний балл', 
-      value: (grades.reduce((acc, g) => acc + g.grade, 0) / grades.length).toFixed(1), 
+      value: grades.length > 0 ? (grades.reduce((acc, g) => acc + g.grade, 0) / grades.length).toFixed(1) : '0', 
       icon: 'GraduationCap', 
       color: 'bg-gradient-to-br from-primary to-primary/70',
       trend: '+0.3'
@@ -185,6 +181,22 @@ const Index = () => {
     });
   };
 
+  const handleClearAllGrades = () => {
+    setGrades([]);
+    toast({
+      title: 'Все оценки удалены',
+      description: 'Журнал оценок очищен',
+    });
+  };
+
+  const handleClearAllHomework = () => {
+    setHomeworks([]);
+    toast({
+      title: 'Все задания удалены',
+      description: 'Список домашних заданий очищен',
+    });
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Toaster />
@@ -200,9 +212,23 @@ const Index = () => {
                 <p className="text-sm text-muted-foreground">Ученик: Студена Тубькет 2024</p>
               </div>
             </div>
-            <Button className="bg-primary hover:bg-primary/90">
-              <Icon name="User" size={18} />
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => {
+                  handleClearAllGrades();
+                  handleClearAllHomework();
+                }}
+                className="text-destructive hover:text-destructive"
+              >
+                <Icon name="Trash2" size={16} />
+                <span className="ml-2">Очистить всё</span>
+              </Button>
+              <Button className="bg-primary hover:bg-primary/90">
+                <Icon name="User" size={18} />
+              </Button>
+            </div>
           </div>
         </div>
       </header>
@@ -355,6 +381,12 @@ const Index = () => {
                     </Dialog>
                   </CardHeader>
                   <CardContent>
+                    {homeworks.length === 0 ? (
+                      <div className="text-center py-8 text-muted-foreground">
+                        <Icon name="BookOpen" size={48} className="mx-auto mb-2 opacity-50" />
+                        <p>Нет домашних заданий</p>
+                      </div>
+                    ) : (
                     <div className="space-y-3">
                       {homeworks.map((hw) => (
                         <div
@@ -410,6 +442,7 @@ const Index = () => {
                         </div>
                       ))}
                     </div>
+                    )}
                   </CardContent>
                 </Card>
               </div>
@@ -474,6 +507,12 @@ const Index = () => {
                   </Dialog>
                 </CardHeader>
                 <CardContent>
+                  {grades.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <Icon name="Award" size={48} className="mx-auto mb-2 opacity-50" />
+                      <p>Нет оценок</p>
+                    </div>
+                  ) : (
                   <div className="space-y-3">
                     {grades.map((grade) => (
                       <div
@@ -503,6 +542,7 @@ const Index = () => {
                       </div>
                     ))}
                   </div>
+                  )}
                 </CardContent>
               </Card>
 
