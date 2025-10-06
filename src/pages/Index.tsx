@@ -33,12 +33,7 @@ const Index = () => {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('dashboard');
   
-  const [grades, setGrades] = useState<Grade[]>([
-    { id: '1', subject: 'Математика', grade: 5, date: '15 окт', teacher: 'Иванов И.И.' },
-    { id: '2', subject: 'Русский язык', grade: 4, date: '14 окт', teacher: 'Петрова А.С.' },
-    { id: '3', subject: 'Физика', grade: 5, date: '13 окт', teacher: 'Сидоров П.П.' },
-    { id: '4', subject: 'Литература', grade: 4, date: '12 окт', teacher: 'Смирнова Е.В.' },
-  ]);
+  const [grades, setGrades] = useState<Grade[]>([]);
 
   const [homeworks, setHomeworks] = useState<Homework[]>([
     { id: '1', subject: 'Математика', task: 'Решить задачи №45-50', deadline: 'Завтра', urgent: true, completed: false },
