@@ -575,9 +575,197 @@ const Index = () => {
                 </CardContent>
               </Card>
             </div>
+
+            <Card className="hover:shadow-lg transition-shadow duration-300">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Icon name="Calendar" size={24} />
+                  Календарь и посещаемость
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <CalendarView />
+              </CardContent>
+            </Card>
           </div>
         </main>
       </div>
+    </div>
+  );
+};
+
+const CalendarView = () => {
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  
+  const attendance = {
+    '2024-10-01': 'present',
+    '2024-10-02': 'present',
+    '2024-10-03': 'absent',
+    '2024-10-04': 'present',
+    '2024-10-07': 'present',
+    '2024-10-08': 'late',
+    '2024-10-09': 'present',
+    '2024-10-10': 'present',
+    '2024-10-11': 'present',
+    '2024-10-14': 'present',
+    '2024-10-15': 'present',
+  };
+
+  const events = {
+    '2024-10-18': 'Контрольная по математике',
+    '2024-10-20': 'Родительское собрание',
+    '2024-10-25': 'Экскурсия в музей',
+  };
+
+  const getDaysInMonth = (date: Date) => {
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const daysInMonth = lastDay.getDate();
+    const startingDayOfWeek = firstDay.getDay();
+    
+    return { daysInMonth, startingDayOfWeek: startingDayOfWeek === 0 ? 6 : startingDayOfWeek - 1 };
+  };
+
+  const { daysInMonth, startingDayOfWeek } = getDaysInMonth(currentDate);
+  
+  const monthNames = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
+  const dayNames = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+
+  const previousMonth = () => {
+    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
+  };
+
+  const nextMonth = () => {
+    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1));
+  };
+
+  const getDateKey = (day: number) => {
+    const year = currentDate.getFullYear();
+    const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+    const dayStr = String(day).padStart(2, '0');
+    return `${year}-${month}-${dayStr}`;
+  };
+
+  const getAttendanceStatus = (day: number) => {
+    const dateKey = getDateKey(day);
+    return attendance[dateKey as keyof typeof attendance];
+  };
+
+  const getEvent = (day: number) => {
+    const dateKey = getDateKey(day);
+    return events[dateKey as keyof typeof events];
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'present': return 'bg-secondary';
+      case 'absent': return 'bg-destructive';
+      case 'late': return 'bg-[#F59E0B]';
+      default: return '';
+    }
+  };
+
+  const days = [];
+  for (let i = 0; i < startingDayOfWeek; i++) {
+    days.push(<div key={`empty-${i}`} className="aspect-square" />);
+  }
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const status = getAttendanceStatus(day);
+    const event = getEvent(day);
+    const isToday = day === new Date().getDate() && 
+                    currentDate.getMonth() === new Date().getMonth() &&
+                    currentDate.getFullYear() === new Date().getFullYear();
+    
+    days.push(
+      <button
+        key={day}
+        onClick={() => setSelectedDate(new Date(currentDate.getFullYear(), currentDate.getMonth(), day))}
+        className={`aspect-square p-2 rounded-xl border-2 transition-all duration-200 relative ${
+          isToday ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50'
+        } ${status ? getStatusColor(status) + ' text-white' : 'bg-white'}`}
+      >
+        <span className={`text-sm font-medium ${status ? 'text-white' : 'text-foreground'}`}>
+          {day}
+        </span>
+        {event && (
+          <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2">
+            <div className="w-1.5 h-1.5 bg-primary rounded-full" />
+          </div>
+        )}
+      </button>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-semibold text-foreground">
+          {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
+        </h3>
+        <div className="flex gap-2">
+          <Button size="sm" variant="outline" onClick={previousMonth}>
+            <Icon name="ChevronLeft" size={16} />
+          </Button>
+          <Button size="sm" variant="outline" onClick={nextMonth}>
+            <Icon name="ChevronRight" size={16} />
+          </Button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-7 gap-2 mb-2">
+        {dayNames.map(day => (
+          <div key={day} className="text-center text-sm font-medium text-muted-foreground py-2">
+            {day}
+          </div>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-7 gap-2">
+        {days}
+      </div>
+
+      <div className="flex items-center gap-4 pt-4 border-t">
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 bg-secondary rounded" />
+          <span className="text-sm text-muted-foreground">Присутствие</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 bg-destructive rounded" />
+          <span className="text-sm text-muted-foreground">Отсутствие</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 bg-[#F59E0B] rounded" />
+          <span className="text-sm text-muted-foreground">Опоздание</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-3 h-3 bg-primary rounded-full" />
+          <span className="text-sm text-muted-foreground">События</span>
+        </div>
+      </div>
+
+      {selectedDate && (
+        <div className="mt-4 p-4 bg-muted rounded-xl animate-fade-in">
+          <p className="text-sm font-semibold text-foreground mb-2">
+            {selectedDate.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })}
+          </p>
+          {getEvent(selectedDate.getDate()) && (
+            <p className="text-sm text-muted-foreground">
+              📌 {getEvent(selectedDate.getDate())}
+            </p>
+          )}
+          {getAttendanceStatus(selectedDate.getDate()) && (
+            <Badge className="mt-2">
+              {getAttendanceStatus(selectedDate.getDate()) === 'present' && 'Присутствовал'}
+              {getAttendanceStatus(selectedDate.getDate()) === 'absent' && 'Отсутствовал'}
+              {getAttendanceStatus(selectedDate.getDate()) === 'late' && 'Опоздал'}
+            </Badge>
+          )}
+        </div>
+      )}
     </div>
   );
 };
